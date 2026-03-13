@@ -68,10 +68,11 @@ function runServer (argv) {
     debug(new Date(), `Loading initial state from ${cpath}`)
     Object.assign(STATE, require(cpath)(CTX))
   } catch (e) {
-    throw Error('ERR_INVALID_STATE', e)
+    console.error(e)
+    throw e
   }
 
-  const addOceanContext = (req, res, next) => {
+  const addDatumContext = (req, res, next) => {
     req.ctx = CTX
     req.state = STATE.state
     next()
@@ -81,7 +82,7 @@ function runServer (argv) {
 
   try {
     const router = require('./routers/base.js')
-    app.addHook('onRequest', addOceanContext)
+    app.addHook('onRequest', addDatumContext)
     app.addHook('onSend', addDelay)
     router(app)
   } catch (e) {
@@ -94,7 +95,7 @@ function runServer (argv) {
     if (err) {
       throw err
     }
-    console.log(`Mock Ocean API server listening on ${addr}`)
+    console.log(`Mock DATUM API server listening on ${addr}`)
   })
 
   return {

@@ -1,15 +1,15 @@
 {
-  "name": "miningos-wrk-minerpool-ocean",
+  "name": "miningos-wrk-datum",
   "version": "0.0.1",
-  "description": "Ocean mining pool worker",
+  "description": "DATUM worker",
   "keywords": [
-    "tether"
+    "OCEAN"
   ],
-  "author": "Tether",
+  "author": "OCEAN",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tetherto/miningos-wrk-minerpool-ocean.git"
+    "url": "git+https://github.com/retropex/miningos-wrk-datum.git"
   },
   "engine": {
     "node": ">=20.0"
