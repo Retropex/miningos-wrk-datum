@@ -10,7 +10,7 @@ function checkError (req, res) {
 
 module.exports = function (fastify) {
   function sendResult (res, data) {
-    res.send({ result: data })
+    res.send(data)
   }
 
   fastify.get('/v1/decentralized_client_stats', (req, res) => {
