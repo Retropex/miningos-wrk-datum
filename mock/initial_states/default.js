@@ -1,6 +1,6 @@
 'use strict'
 
-const { generateClientStats, stratumServerInfo, currentStratumJob, coinbaser, threadStats, stratumClientList } = require('./utils')
+const { generateClientStats, stratumServerInfo, currentStratumJob, coinbaser, threadStats, stratumClientList, configuration } = require('./utils')
 
 module.exports = function (CTX) {
   const state = {
@@ -9,7 +9,8 @@ module.exports = function (CTX) {
     current_stratum_job: currentStratumJob(),
     coinbaser: coinbaser(),
     thread_stats: threadStats(),
-    stratum_client_list: stratumClientList()
+    stratum_client_list: stratumClientList(),
+    configuration: configuration()
   }
 
   const initialState = JSON.parse(JSON.stringify(state))

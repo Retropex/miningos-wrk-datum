@@ -138,6 +138,34 @@ function stratumClientList () {
   return clientList
 }
 
+function configuration () {
+  let config = {}
+  
+  config = {
+    pool_address: randomBc1Address(),
+    miner_username_behavior: {
+      pool_pass_workers: Math.random() < 0.5,
+      pool_pass_full_users: Math.random() < 0.5
+    },
+    coinbase_tag_secondary: "DATUM User",
+    coinbase_unique_id: Math.floor(randomNumber(1, 65536)),
+    reward_sharing: randomRewardSharing(),
+    pool: {
+      host: "datum-beta1.mine.ocean.xyz",
+      port: 28915,
+      pubkey: "f21f2f0ef0aa1970468f22bad9bb7f4535146f8e4a8f646bebc93da3d89b1406f40d032f09a417d94dc068055df654937922d2c89522e3e8f6f0e649de473003"
+    },
+    fingerprint_miners: Math.random() < 0.5,
+    always_pay_self: Math.random() < 0.5,
+    work_update_seconds: Math.floor(randomNumber(1, 120)),
+    rpcurl: "http://localhost:8332",
+    rpcuser: "test",
+    rpcpassword: "test"
+  }
+  
+  return config
+}
+
 function randomFloat () {
   return crypto.randomBytes(6).readUIntBE(0, 6) / 2 ** 48
 }
@@ -171,6 +199,12 @@ function randomCoinbaseFingerprint () {
   return coinbaseList[Math.round(randomNumber(0, 5))]
 }
 
+function randomRewardSharing () {
+  const coinbaseList = ['require', 'prefer', 'never']
+
+  return coinbaseList[Math.round(randomNumber(0, 2))]
+}
+
 module.exports = {
   generateClientStats,
   stratumServerInfo,
@@ -178,5 +212,6 @@ module.exports = {
   coinbaser,
   threadStats,
   stratumClientList,
+  configuration,
   randomNumber
 }
