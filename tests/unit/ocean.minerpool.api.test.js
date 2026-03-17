@@ -13,135 +13,131 @@ test('OceanMinerPoolApi: should create instance with http client', (t) => {
   t.ok(api._http === mockHttp)
 })
 
-test('OceanMinerPoolApi: getHashRateInfo should call correct endpoint', async (t) => {
-  const username = 'testuser'
+test('OceanMinerPoolApi: getDecentralizedClientStats should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { hashrate_60s: 1000 } } }
+      return { body: { acceptedShares: 1000 } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getHashRateInfo(username)
+  const result = await api.getDecentralizedClientStats()
 
-  t.is(calledPath, `/v1/user_hashrate/${username}`)
+  t.is(calledPath, '/v1/decentralized_client_stats')
   t.ok(result)
-  t.is(result.hashrate_60s, 1000)
+  t.ok(result.acceptedShares, 1000)
 })
 
-test('OceanMinerPoolApi: getWorkers should call correct endpoint', async (t) => {
-  const username = 'testuser'
+test('OceanMinerPoolApi: getStratumServerInfo should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { workers: {} } } }
+      return { body: { activeThread: 10 } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getWorkers(username)
+  const result = await api.getStratumServerInfo()
 
-  t.is(calledPath, `/v1/user_hashrate_full/${username}`)
+  t.is(calledPath, '/v1/stratum_server_info')
   t.ok(result)
-  t.ok(result.workers)
+  t.is(result.activeThread, 10)
 })
 
-test('OceanMinerPoolApi: getMonthlyEarnings should call correct endpoint', async (t) => {
-  const username = 'testuser'
-  const month = '2024-1'
+test('OceanMinerPoolApi: getCurrentStratumJob should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { report: [] } } }
+      return { body: { block_height: 900000 } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getMonthlyEarnings(username, month)
+  const result = await api.getCurrentStratumJob()
 
-  t.is(calledPath, `/v1/monthly_earnings_report/${username}/${month}`)
+  t.is(calledPath, '/v1/current_stratum_job')
   t.ok(result)
-  t.ok(result.report)
+  t.is(result.block_height, 900000)
 })
 
-test('OceanMinerPoolApi: getTransactions should call correct endpoint', async (t) => {
-  const username = 'testuser'
-  const start = 1234567890
-  const end = 1234654290
+test('OceanMinerPoolApi: getCoinbaser should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { earnings: [] } } }
+      return { body: { OP_RETURN: 0 } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getTransactions(username, start, end)
+  const result = await api.getCoinbaser()
 
-  t.is(calledPath, `/v1/earnpay/${username}/${start}/${end}`)
+  t.is(calledPath, '/v1/coinbaser')
   t.ok(result)
+  t.is(result.OP_RETURN, 0)
 })
 
-test('OceanMinerPoolApi: getBlocks should call correct endpoint', async (t) => {
+test('OceanMinerPoolApi: getThreadStats should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { blocks: [] } } }
+      return { body: { 0: { connection_count: 5 } } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getBlocks()
+  const result = await api.getThreadStats()
 
-  t.is(calledPath, '/v1/blocks')
+  t.is(calledPath, '/v1/thread_stats')
   t.ok(result)
-  t.ok(result.blocks)
+  t.ok(result[0])
+  t.is(result[0].connection_count, 5)
 })
 
-test('OceanMinerPoolApi: getEarnings should call correct endpoint', async (t) => {
-  const username = 'testuser'
-  const startTime = 1234567890
+test('OceanMinerPoolApi: getStratumList should call correct endpoint', async (t) => {
   let calledPath = null
 
   const mockHttp = {
     get: async (path) => {
       calledPath = path
-      return { body: { result: { earnings: [] } } }
+      return { body: { 0: { 0: { remote_host: '::ffff:192.168.1.1' } } } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
-  const result = await api.getEarnings(username, startTime)
+  const result = await api.getStratumList()
 
-  t.is(calledPath, `/v1/earnpay/${username}/${startTime}`)
+  t.is(calledPath, '/v1/stratum_client_list')
   t.ok(result)
+  t.ok(result[0])
+  t.ok(result[0][0])
+  t.is(result[0][0].remote_host, '::ffff:192.168.1.1')
 })
 
-test('OceanMinerPoolApi: _request should handle errors', async (t) => {
+test('OceanMinerPoolApi: getConfiguration should call correct endpoint', async (t) => {
+  let calledPath = null
+
   const mockHttp = {
-    get: async () => {
-      throw new Error('Network error')
+    get: async (path) => {
+      calledPath = path
+      return { body: { coinbase_tag_secondary: 'DATUM User' } }
     }
   }
 
   const api = new OceanMinerPoolApi(mockHttp)
+  const result = await api.getConfiguration()
 
-  try {
-    await api.getHashRateInfo('testuser')
-    t.fail('Should have thrown an error')
-  } catch (err) {
-    t.ok(err)
-    t.is(err.message, 'Network error')
-  }
+  t.is(calledPath, '/v1/configuration')
+  t.ok(result)
+  t.is(result.coinbase_tag_secondary, 'DATUM User')
 })
