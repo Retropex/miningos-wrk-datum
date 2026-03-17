@@ -3,7 +3,7 @@
 const { setTimeout: sleep } = require('timers/promises')
 const DigestClient = require('digest-fetch').default
 
-class OceanMinerPoolApi {
+class DatumApi {
   constructor (http) {
     this._http = http
   }
@@ -57,5 +57,5 @@ class OceanMinerPoolApi {
 }
 
 module.exports = {
-  OceanMinerPoolApi
+  DatumApi
 }

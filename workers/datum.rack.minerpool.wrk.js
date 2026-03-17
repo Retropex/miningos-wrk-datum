@@ -2,10 +2,10 @@
 
 const async = require('async')
 const TetherWrkBase = require('tether-wrk-base/workers/base.wrk.tether')
-const { OceanMinerPoolApi } = require('./lib/ocean.minerpool.api')
+const { DatumApi } = require('./lib/datum.minerpool.api')
 const gLibUtilBase = require('lib-js-util-base')
 
-class WrkMinerPoolRackOcean extends TetherWrkBase {
+class WrkMinerDatum extends TetherWrkBase {
   constructor (conf, ctx) {
     super(conf, ctx)
 
@@ -27,16 +27,16 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
   init () {
     super.init()
 
-    this.loadConf('ocean', 'ocean')
+    this.loadConf('datum', 'datum')
 
     this.setInitFacs([
-      ['fac', 'bfx-facs-scheduler', '0', 'ocean', {}, -10],
+      ['fac', 'bfx-facs-scheduler', '0', 'datum', {}, -10],
       ['fac', 'hp-svc-facs-store', 's1', 's1', {
         storePrimaryKey: this.ctx.storePrimaryKey,
         storeDir: `store/${this.ctx.rack}-db`
       }, 0],
       ['fac', 'bfx-facs-http', '0', '0', {
-        baseUrl: this.conf.ocean.apiUrl,
+        baseUrl: this.conf.datum.apiUrl,
         timeout: 30 * 1000
       }, 0]
     ])
@@ -49,7 +49,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
         this.net_r0.rpcServer.respond('getWrkExtData', async (req) => {
           return await this.net_r0.handleReply('getWrkExtData', req)
         })
-        this.oceanApi = new OceanMinerPoolApi(this.http_0)
+        this.DatumApi = new DatumApi(this.http_0)
       }
     ], cb)
   }
@@ -60,8 +60,8 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
 
   auth () {
     const authConf = {
-      user: this.conf.ocean.user,
-      password: this.conf.ocean.password
+      user: this.conf.datum.user,
+      password: this.conf.datum.password
     }
 
     return authConf
@@ -71,7 +71,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let datumStats
 
     try {
-      datumStats = await this.oceanApi.getDecentralizedClientStats()
+      datumStats = await this.DatumApi.getDecentralizedClientStats()
     } catch (e) {
       this._logErr('ERR_DATUM_STATS_FETCH', e)
     }
@@ -87,7 +87,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let stratumInfo
 
     try {
-      stratumInfo = await this.oceanApi.getStratumServerInfo()
+      stratumInfo = await this.DatumApi.getStratumServerInfo()
     } catch (e) {
       this._logErr('ERR_STRATUM_INFO_FETCH', e)
     }
@@ -103,7 +103,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let stratumJob
 
     try {
-      stratumJob = await this.oceanApi.getCurrentStratumJob()
+      stratumJob = await this.DatumApi.getCurrentStratumJob()
     } catch (e) {
       this._logErr('ERR_STRATUM_JOB_FETCH', e)
     }
@@ -119,7 +119,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let threadStats
 
     try {
-      threadStats = await this.oceanApi.getThreadStats()
+      threadStats = await this.DatumApi.getThreadStats()
     } catch (e) {
       this._logErr('ERR_THREAD_STATS_FETCH', e)
     }
@@ -135,7 +135,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let stratumList
 
     try {
-      stratumList = await this.oceanApi.getStratumList(this.auth())
+      stratumList = await this.DatumApi.getStratumList(this.auth())
     } catch (e) {
       this._logErr('ERR_STRATUM_LIST_FETCH', e)
     }
@@ -151,7 +151,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let coinbaser
 
     try {
-      coinbaser = await this.oceanApi.getCoinbaser()
+      coinbaser = await this.DatumApi.getCoinbaser()
     } catch (e) {
       this._logErr('ERR_COINBASER_FETCH', e)
     }
@@ -167,7 +167,7 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
     let configuration
 
     try {
-      configuration = await this.oceanApi.getConfiguration(this.auth())
+      configuration = await this.DatumApi.getConfiguration(this.auth())
     } catch (e) {
       this._logErr('ERR_CONFIGURATION_FETCH', e)
     }
@@ -219,4 +219,4 @@ class WrkMinerPoolRackOcean extends TetherWrkBase {
   }
 }
 
-module.exports = WrkMinerPoolRackOcean
+module.exports = WrkMinerDatum

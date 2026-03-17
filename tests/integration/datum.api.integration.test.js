@@ -2,7 +2,7 @@
 
 const test = require('brittle')
 const { createServer } = require('../../mock/server')
-const { OceanMinerPoolApi } = require('../../workers/lib/ocean.minerpool.api')
+const { DatumApi } = require('../../workers/lib/datum.minerpool.api')
 const { setTimeout: sleep } = require('timers/promises')
 
 // Mock HTTP client that wraps fetch or http
@@ -70,7 +70,7 @@ async function ensureServer () {
 
     // Create HTTP client and API client
     httpClient = new MockHttpClient(TEST_BASE_URL)
-    apiClient = new OceanMinerPoolApi(httpClient)
+    apiClient = new DatumApi(httpClient)
   }
   return { mockServer, apiClient, httpClient }
 }
