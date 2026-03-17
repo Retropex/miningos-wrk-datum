@@ -2,7 +2,6 @@
 
 const test = require('brittle')
 const WrkMinerPoolRackOcean = require('../../workers/ocean.rack.minerpool.wrk')
-const { POOL_TYPE } = require('../../workers/lib/constants')
 
 function createMockWorker () {
   const mockCtx = {

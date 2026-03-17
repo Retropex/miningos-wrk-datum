@@ -13,6 +13,16 @@ module.exports = function (fastify) {
     res.send(data)
   }
 
+  fastify.get('/v1/ping', (req, res) => {
+    try {
+      if (checkError(req, res)) return
+
+      sendResult(res, 'PONG')
+    } catch (e) {
+      res.code(500).send({ error: e.message })
+    }
+  })
+
   fastify.get('/v1/decentralized_client_stats', (req, res) => {
     try {
       if (checkError(req, res)) return
@@ -68,6 +78,16 @@ module.exports = function (fastify) {
       if (checkError(req, res)) return
 
       sendResult(res, req.state.stratum_client_list)
+    } catch (e) {
+      res.code(500).send({ error: e.message })
+    }
+  })
+
+  fastify.get('/v1/configuration', (req, res) => {
+    try {
+      if (checkError(req, res)) return
+
+      sendResult(res, req.state.configuration)
     } catch (e) {
       res.code(500).send({ error: e.message })
     }

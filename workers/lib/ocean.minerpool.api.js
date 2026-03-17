@@ -1,41 +1,58 @@
 'use strict'
 
 const { setTimeout: sleep } = require('timers/promises')
+const DigestClient = require('digest-fetch').default
 
 class OceanMinerPoolApi {
   constructor (http) {
     this._http = http
   }
 
-  async _request (apiPath) {
+  async _request (apiPath, auth) {
     // waiting between calls due to api rate limits
     await sleep(1000)
-    const { body: resp } = await this._http.get(apiPath, { encoding: 'json' })
-    return resp.result
+    let resp
+    if (auth) {
+      const client = new DigestClient(auth.user, auth.password, { algorithm: 'SHA-256' })
+      const url = apiPath.includes('://') ? apiPath : `${this._http.baseUrl}/${apiPath.replace(/^\//, '')}`
+      const response = await client.fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      resp = await response.json()
+    } else {
+      const { body } = await this._http.get(apiPath, { encoding: 'json' })
+      resp = body
+    }
+    return resp
   }
 
-  async getHashRateInfo (username) {
-    return this._request(`/v1/user_hashrate/${username}`)
+  async getDecentralizedClientStats () {
+    return this._request('/v1/decentralized_client_stats')
   }
 
-  async getWorkers (username) {
-    return this._request(`/v1/user_hashrate_full/${username}`)
+  async getStratumServerInfo () {
+    return this._request('/v1/stratum_server_info')
   }
 
-  async getMonthlyEarnings (username, month) {
-    return this._request(`/v1/monthly_earnings_report/${username}/${month}`)
+  async getCurrentStratumJob () {
+    return this._request('/v1/current_stratum_job')
   }
 
-  async getTransactions (username, start, end) {
-    return await this._request(`/v1/earnpay/${username}/${start}/${end}`)
+  async getCoinbaser () {
+    return await this._request('/v1/coinbaser')
   }
 
-  async getBlocks () {
-    return await this._request('/v1/blocks')
+  async getThreadStats () {
+    return await this._request('/v1/thread_stats')
   }
 
-  async getEarnings (username, startTime) {
-    return await this._request(`/v1/earnpay/${username}/${startTime}`)
+  async getStratumList (auth) {
+    return await this._request('/v1/stratum_client_list', auth)
+  }
+
+  async getConfiguration (auth) {
+    return await this._request('/v1/configuration', auth)
   }
 }
 

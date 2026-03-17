@@ -50,7 +50,7 @@ function currentStratumJob () {
     block_difficulty: randomNumber(1, 100000000000),
     block_version: {
       int: 536870912,
-      hex: 20000000
+      hex: '20000000'
     },
     bits: '1701f303',
     time: {
@@ -64,7 +64,8 @@ function currentStratumJob () {
     },
     size: Math.round(randomNumber(1, 4000000)),
     weight: Math.round(randomNumber(1, 400000)),
-    sigops: Math.round(randomNumber(1, 80000))
+    sigops: Math.round(randomNumber(1, 80000)),
+    tx_count: Math.round(randomNumber(1, 2000))
   }
 
   return job
@@ -140,29 +141,29 @@ function stratumClientList () {
 
 function configuration () {
   let config = {}
-  
+
   config = {
     pool_address: randomBc1Address(),
     miner_username_behavior: {
       pool_pass_workers: Math.random() < 0.5,
       pool_pass_full_users: Math.random() < 0.5
     },
-    coinbase_tag_secondary: "DATUM User",
+    coinbase_tag_secondary: 'DATUM User',
     coinbase_unique_id: Math.floor(randomNumber(1, 65536)),
     reward_sharing: randomRewardSharing(),
     pool: {
-      host: "datum-beta1.mine.ocean.xyz",
+      host: 'datum-beta1.mine.ocean.xyz',
       port: 28915,
-      pubkey: "f21f2f0ef0aa1970468f22bad9bb7f4535146f8e4a8f646bebc93da3d89b1406f40d032f09a417d94dc068055df654937922d2c89522e3e8f6f0e649de473003"
+      pubkey: 'f21f2f0ef0aa1970468f22bad9bb7f4535146f8e4a8f646bebc93da3d89b1406f40d032f09a417d94dc068055df654937922d2c89522e3e8f6f0e649de473003'
     },
     fingerprint_miners: Math.random() < 0.5,
     always_pay_self: Math.random() < 0.5,
     work_update_seconds: Math.floor(randomNumber(1, 120)),
-    rpcurl: "http://localhost:8332",
-    rpcuser: "test",
-    rpcpassword: "test"
+    rpcurl: 'http://localhost:8332',
+    rpcuser: 'test',
+    rpcpassword: 'test'
   }
-  
+
   return config
 }
 
