@@ -43,10 +43,9 @@ const TEST_BASE_URL = `http://${TEST_HOST}:${TEST_PORT}`
 async function waitForServer (url, maxRetries = 20, delay = 200) {
   for (let i = 0; i < maxRetries; i++) {
     try {
-      const response = await fetch(`${url}/v1/ping`)
-      if (response.ok) {
-        return true
-      }
+      await fetch(`${url}/v1/ping`)
+      // Any HTTP response means the server is up (including 500 for error servers)
+      return true
     } catch (e) {
       // Server not ready yet
     }
@@ -243,6 +242,131 @@ test('integration: getConfiguration should fetch the configuration of datum', as
   t.ok(typeof result.rpcurl === 'string')
   t.ok(typeof result.rpcuser === 'string')
   t.ok(typeof result.rpcpassword === 'string')
+})
+
+test('integration: all routes should return 500 when state throws', async (t) => {
+  const { mockServer } = await ensureServer()
+  const {
+    generateClientStats,
+    stratumServerInfo,
+    currentStratumJob,
+    coinbaser,
+    threadStats,
+    stratumClientList,
+    configuration
+  } = require('../../mock/initial_states/utils')
+
+  const routes = [
+    { path: '/v1/decentralized_client_stats', stateKey: 'decentralized_client_stats', restore: generateClientStats },
+    { path: '/v1/stratum_server_info', stateKey: 'stratum_server_info', restore: stratumServerInfo },
+    { path: '/v1/current_stratum_job', stateKey: 'current_stratum_job', restore: currentStratumJob },
+    { path: '/v1/coinbaser', stateKey: 'coinbaser', restore: coinbaser },
+    { path: '/v1/thread_stats', stateKey: 'thread_stats', restore: threadStats },
+    { path: '/v1/stratum_client_list', stateKey: 'stratum_client_list', restore: stratumClientList },
+    { path: '/v1/configuration', stateKey: 'configuration', restore: configuration }
+  ]
+
+  for (const { path, stateKey, restore } of routes) {
+    Object.defineProperty(mockServer.state, stateKey, {
+      get () { throw new Error('simulated error') },
+      configurable: true
+    })
+
+    try {
+      const response = await fetch(`${TEST_BASE_URL}${path}`)
+      t.is(response.status, 500, `${path} should return 500`)
+      const body = await response.json()
+      t.is(body.error, 'simulated error', `${path} should return the error message`)
+    } finally {
+      Object.defineProperty(mockServer.state, stateKey, {
+        value: restore(),
+        writable: true,
+        configurable: true
+      })
+    }
+  }
+})
+
+test('integration: reset should restore initial state', async (t) => {
+  const { mockServer } = await ensureServer()
+
+  const original = JSON.parse(JSON.stringify(mockServer.state.decentralized_client_stats))
+
+  // Mutate the state
+  mockServer.state.decentralized_client_stats = { corrupted: true }
+  t.is(mockServer.state.decentralized_client_stats.corrupted, true, 'state should be mutated')
+
+  // Reset and verify restoration
+  mockServer.reset()
+  t.alike(
+    Object.keys(mockServer.state.decentralized_client_stats),
+    Object.keys(original),
+    'reset should restore decentralized_client_stats keys'
+  )
+})
+
+test('integration: start should be a no-op when server is already running', async (t) => {
+  const { mockServer } = await ensureServer()
+
+  t.execution(() => mockServer.start(), 'start() should not throw when already running')
+
+  const response = await fetch(`${TEST_BASE_URL}/v1/ping`)
+  t.is(response.status, 200)
+})
+
+test('integration: all routes should return 500 via checkError when error flag is set', async (t) => {
+  const ERROR_PORT = 8003
+  const ERROR_BASE_URL = `http://${TEST_HOST}:${ERROR_PORT}`
+
+  const errorServer = createServer({
+    port: ERROR_PORT,
+    host: TEST_HOST,
+    delay: 0,
+    error: true
+  })
+
+  try {
+    await waitForServer(ERROR_BASE_URL)
+
+    const routes = [
+      '/v1/decentralized_client_stats',
+      '/v1/stratum_server_info',
+      '/v1/current_stratum_job',
+      '/v1/coinbaser',
+      '/v1/thread_stats',
+      '/v1/stratum_client_list',
+      '/v1/configuration'
+    ]
+
+    for (const route of routes) {
+      const response = await fetch(`${ERROR_BASE_URL}${route}`)
+      t.is(response.status, 500, `${route} should return 500 when error flag is set`)
+      const body = await response.json()
+      t.is(body.error, 'Internal server error', `${route} should return the internal server error message`)
+    }
+  } finally {
+    await errorServer.stop()
+  }
+})
+
+test('integration: stop should be safe to call when server is already stopped', async (t) => {
+  const STOP_PORT = 8004
+  const STOP_BASE_URL = `http://${TEST_HOST}:${STOP_PORT}`
+
+  const tempServer = createServer({
+    port: STOP_PORT,
+    host: TEST_HOST,
+    delay: 0,
+    error: false
+  })
+
+  await waitForServer(STOP_BASE_URL)
+  await tempServer.stop()
+
+  // Second call should not throw (hits the false branch of `if (app.server)`)
+  await t.execution(async () => {
+    await tempServer.stop()
+  }, 'stop() should not throw when server is already closed')
 })
 
 // Final cleanup hook to ensure server is closed
